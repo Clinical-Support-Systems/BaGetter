@@ -1,0 +1,41 @@
+<Solution>
+  <Folder Name="/aspire/">
+    <Project Path="tests/BaGetter.Azure.Aspire.AppHost/BaGetter.Azure.Aspire.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/BaGetter.Protocol.Samples.Tests/BaGetter.Protocol.Samples.Tests.csproj" />
+    <Project Path="samples/BaGetterWebApplication/BaGetterWebApplication.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".github/workflows/publish.yml" />
+    <File Path="Directory.Packages.props" />
+    <File Path="Dockerfile" />
+    <File Path="global.json" />
+    <File Path="nuget.config" />
+    <File Path="src/Directory.Build.props" />
+    <File Path="src/Directory.Build.targets" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/BaGetter.Aliyun/BaGetter.Aliyun.csproj" />
+    <Project Path="src/BaGetter.Aws/BaGetter.Aws.csproj" />
+    <Project Path="src/BaGetter.Azure/BaGetter.Azure.csproj" />
+    <Project Path="src/BaGetter.Core/BaGetter.Core.csproj" />
+    <Project Path="src/BaGetter.Database.MySql/BaGetter.Database.MySql.csproj" />
+    <Project Path="src/BaGetter.Database.PostgreSql/BaGetter.Database.PostgreSql.csproj" />
+    <Project Path="src/BaGetter.Database.Sqlite/BaGetter.Database.Sqlite.csproj" />
+    <Project Path="src/BaGetter.Database.SqlServer/BaGetter.Database.SqlServer.csproj" />
+    <Project Path="src/BaGetter.Gcp/BaGetter.Gcp.csproj" />
+    <Project Path="src/BaGetter.Protocol/BaGetter.Protocol.csproj" />
+    <Project Path="src/BaGetter.Tencent/BaGetter.Tencent.csproj" />
+    <Project Path="src/BaGetter.Web/BaGetter.Web.csproj" />
+    <Project Path="src/BaGetter/BaGetter.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BaGetter.Core.Tests/BaGetter.Core.Tests.csproj" />
+    <Project Path="tests/BaGetter.Protocol.Tests/BaGetter.Protocol.Tests.csproj" />
+    <Project Path="tests/BaGetter.Tests/BaGetter.Tests.csproj" />
+    <Project Path="tests/BaGetter.Web.Tests/BaGetter.Web.Tests.csproj" />
+  </Folder>
+  <Project Path="tests/BaGetter.Azure.Aspire.Tests/BaGetter.Azure.Aspire.Tests.csproj" />
+</Solution>
