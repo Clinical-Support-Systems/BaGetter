@@ -4,6 +4,7 @@ using Azure.Storage;
 using Azure.Storage.Blobs;
 using BaGetter.Azure;
 using BaGetter.Core;
+using BaGetter.Core.Statistics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -18,6 +19,7 @@ namespace BaGetter
 
             app.Services.AddTransient<TablePackageDatabase>();
             app.Services.AddTransient<TableSearchService>();
+            app.Services.AddTransient<TableStatisticsSource>();
             app.Services.TryAddTransient<IPackageDatabase>(provider => provider.GetRequiredService<TablePackageDatabase>());
             app.Services.TryAddTransient<ISearchService>(provider => provider.GetRequiredService<TableSearchService>());
             app.Services.TryAddTransient<ISearchIndexer>(provider => provider.GetRequiredService<NullSearchIndexer>());
@@ -36,6 +38,13 @@ namespace BaGetter
                 if (!config.HasDatabaseType("AzureTable")) return null;
 
                 return provider.GetRequiredService<TablePackageDatabase>();
+            });
+
+            app.Services.AddProvider<IStatisticsSource>((provider, config) =>
+            {
+                if (!config.HasDatabaseType("AzureTable")) return null;
+
+                return provider.GetRequiredService<TableStatisticsSource>();
             });
 
             app.Services.AddProvider<ISearchService>((provider, config) =>

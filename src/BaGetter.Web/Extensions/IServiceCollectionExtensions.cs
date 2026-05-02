@@ -2,6 +2,7 @@ using System;
 using System.Text.Json.Serialization;
 using BaGetter.Authentication;
 using BaGetter.Core;
+using BaGetter.Core.Statistics;
 using BaGetter.Web;
 using BaGetter.Web.Authentication;
 using BaGetter.Web.Helper;
@@ -40,6 +41,7 @@ public static class IServiceCollectionExtensions
         services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<IPackageDatabase>);
         services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<ISearchService>);
         services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<ISearchIndexer>);
+        services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<IStatisticsSource>);
 
         return services;
     }

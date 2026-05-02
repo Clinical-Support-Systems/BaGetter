@@ -104,6 +104,7 @@ public static partial class DependencyInjectionExtensions
         services.TryAddTransient<ISymbolStorageService, SymbolStorageService>();
         services.TryAddTransient<IStatisticsService, StatisticsService>();
 
+        services.TryAddTransient<DbContextStatisticsSource>();
         services.TryAddTransient<DatabaseSearchService>();
         services.TryAddTransient<FileStorageService>();
         services.TryAddTransient<PackageService>();
@@ -143,6 +144,16 @@ public static partial class DependencyInjectionExtensions
             {
                 return provider.GetRequiredService<NullStorageService>();
             }
+
+            return null;
+        });
+
+        services.AddProvider<IStatisticsSource>((provider, configuration) =>
+        {
+            if (configuration.HasDatabaseType("MySql")) return provider.GetRequiredService<DbContextStatisticsSource>();
+            if (configuration.HasDatabaseType("PostgreSql")) return provider.GetRequiredService<DbContextStatisticsSource>();
+            if (configuration.HasDatabaseType("SqlServer")) return provider.GetRequiredService<DbContextStatisticsSource>();
+            if (configuration.HasDatabaseType("Sqlite")) return provider.GetRequiredService<DbContextStatisticsSource>();
 
             return null;
         });
