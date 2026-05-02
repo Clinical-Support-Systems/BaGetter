@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "tests/BaGetter.Azure.Aspire.AppHost/BaGetter.Azure.Aspire.AppHost.csproj"
+  }
+}

@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BaGetter.Aliyun\BaGetter.Aliyun.csproj" />
+    <ProjectReference Include="..\BaGetter.Aspire.ServiceDefaults\BaGetter.Aspire.ServiceDefaults.csproj" />
     <ProjectReference Include="..\BaGetter.Aws\BaGetter.Aws.csproj" />
     <ProjectReference Include="..\BaGetter.Azure\BaGetter.Azure.csproj" />
     <ProjectReference Include="..\BaGetter.Core\BaGetter.Core.csproj" />

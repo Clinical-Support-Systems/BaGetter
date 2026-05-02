@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/aspire/">
+    <Project Path="src/BaGetter.Aspire.ServiceDefaults/BaGetter.Aspire.ServiceDefaults.csproj" Id="7cd17fa3-e19c-4435-85ac-c2df4fae1336" />
     <Project Path="tests/BaGetter.Azure.Aspire.AppHost/BaGetter.Azure.Aspire.AppHost.csproj" />
   </Folder>
   <Folder Name="/samples/">

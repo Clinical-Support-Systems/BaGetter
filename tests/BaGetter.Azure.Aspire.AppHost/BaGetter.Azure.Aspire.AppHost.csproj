@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.2.2">
+<Project Sdk="Aspire.AppHost.Sdk/13.2.4">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -10,12 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" />
     <PackageReference Include="Aspire.Hosting.Azure.Storage" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\BaGetter\BaGetter.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +19,10 @@
     <PackageReference Remove="Moq" />
     <PackageReference Remove="xunit" />
     <PackageReference Remove="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BaGetter\BaGetter.csproj" />
   </ItemGroup>
 
 </Project>
