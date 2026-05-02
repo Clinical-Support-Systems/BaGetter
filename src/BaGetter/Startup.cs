@@ -36,15 +36,6 @@ public class Startup
         services.AddBaGetterOptions<IISServerOptions>(nameof(IISServerOptions));
         services.AddBaGetterWebApplication(ConfigureBaGetterApplication);
 
-        // You can swap between implementations of subsystems like storage and search using BaGetter's configuration.
-        // Each subsystem's implementation has a provider that reads the configuration to determine if it should be
-        // activated. BaGetter will run through all its providers until it finds one that is active.
-        services.AddScoped(DependencyInjectionExtensions.GetServiceFromProviders<IContext>);
-        services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<IStorageService>);
-        services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<IPackageDatabase>);
-        services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<ISearchService>);
-        services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<ISearchIndexer>);
-
         services.AddSingleton<IConfigureOptions<MvcRazorRuntimeCompilationOptions>, ConfigureRazorRuntimeCompilation>();
 
         services.AddHealthChecks();

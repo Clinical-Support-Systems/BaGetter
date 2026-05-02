@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using BaGetter.Core;
 using BaGetter.Database.Sqlite;
 using Microsoft.Extensions.Configuration;
@@ -57,6 +58,42 @@ public class HostIntegrationTests
         var context = provider.GetRequiredService<IContext>();
 
         Assert.IsType<SqliteContext>(context);
+    }
+
+    [Fact]
+    public void AddBaGetterWebApplicationResolvesDatabaseContext()
+    {
+        var tempPath = Path.Combine(
+            Path.GetTempPath(),
+            "BaGetterTests",
+            Guid.NewGuid().ToString("N"));
+        var sqlitePath = Path.Combine(tempPath, "BaGetter.db");
+        var storagePath = Path.Combine(tempPath, "Packages");
+
+        Directory.CreateDirectory(tempPath);
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>
+            {
+                { DatabaseTypeKey, "Sqlite" },
+                { ConnectionStringKey, $"Data Source={sqlitePath}" },
+                { "Storage:Type", "FileSystem" },
+                { "Storage:Path", storagePath },
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddBaGetterWebApplication(bagetter =>
+        {
+            bagetter.AddSqliteDatabase();
+            bagetter.AddFileStorage();
+        });
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        Assert.IsType<SqliteContext>(scope.ServiceProvider.GetRequiredService<IContext>());
     }
 
     private IServiceProvider BuildServiceProvider(Dictionary<string, string> configs = null)

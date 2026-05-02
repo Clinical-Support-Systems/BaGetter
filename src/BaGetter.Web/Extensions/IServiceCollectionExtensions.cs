@@ -32,7 +32,14 @@ public static class IServiceCollectionExtensions
 
         services.AddSingleton(ApplicationVersionHelper.GetVersion());
 
-        var app = services.AddBaGetterApplication(configureAction);
+        services.AddBaGetterApplication(configureAction);
+
+        // Resolve the active provider-backed services automatically for web hosts.
+        services.AddScoped(DependencyInjectionExtensions.GetServiceFromProviders<IContext>);
+        services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<IStorageService>);
+        services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<IPackageDatabase>);
+        services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<ISearchService>);
+        services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<ISearchIndexer>);
 
         return services;
     }
