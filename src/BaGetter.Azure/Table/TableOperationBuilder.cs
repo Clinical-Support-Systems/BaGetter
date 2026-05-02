@@ -8,6 +8,20 @@ namespace BaGetter.Azure
 {
     public class TableOperationBuilder
     {
+        public static string GetPartitionKey(string packageId)
+        {
+            ArgumentNullException.ThrowIfNull(packageId);
+
+            return packageId.ToLowerInvariant();
+        }
+
+        public static string GetRowKey(NuGet.Versioning.NuGetVersion version)
+        {
+            ArgumentNullException.ThrowIfNull(version);
+
+            return version.ToNormalizedString().ToLowerInvariant();
+        }
+
         public static PackageEntity GetEntity(Package package)
         {
             ArgumentNullException.ThrowIfNull(package);
@@ -17,8 +31,8 @@ namespace BaGetter.Azure
 
             var entity = new PackageEntity
             {
-                PartitionKey = package.Id.ToLowerInvariant(),
-                RowKey = normalizedVersion.ToLowerInvariant(),
+                PartitionKey = GetPartitionKey(package.Id),
+                RowKey = GetRowKey(version),
 
                 Id = package.Id,
                 NormalizedVersion = normalizedVersion,

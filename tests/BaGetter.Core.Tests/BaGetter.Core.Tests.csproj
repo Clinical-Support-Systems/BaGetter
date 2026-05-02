@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\BaGetter.Core\BaGetter.Core.csproj" />
+    <ProjectReference Include="..\..\src\BaGetter.Azure\BaGetter.Azure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
