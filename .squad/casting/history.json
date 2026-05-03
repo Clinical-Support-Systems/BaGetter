@@ -1,0 +1,26 @@
+{
+  "universe_usage_history": [
+    {
+      "universe": "Firefly",
+      "assignment_id": "2026-05-03T15-50-35-157-setup",
+      "used_at": "2026-05-03T15:50:35.157-04:00"
+    }
+  ],
+  "assignment_cast_snapshots": {
+    "2026-05-03T15-50-35-157-setup": {
+      "universe": "Firefly",
+      "agents": {
+        "lead": "Mal",
+        "security": "Zoe",
+        "nuget": "Jayne",
+        "auth": "Simon",
+        "ui-admin": "Inara",
+        "test": "Kaylee",
+        "devops": "Wash",
+        "scribe": "Scribe",
+        "ralph": "Ralph"
+      },
+      "created_at": "2026-05-03T15:50:35.157-04:00"
+    }
+  }
+}

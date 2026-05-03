@@ -1,0 +1,67 @@
+{
+  "agents": {
+    "lead": {
+      "persistent_name": "Mal",
+      "universe": "Firefly",
+      "created_at": "2026-05-03T15:50:35.157-04:00",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "security": {
+      "persistent_name": "Zoe",
+      "universe": "Firefly",
+      "created_at": "2026-05-03T15:50:35.157-04:00",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "nuget": {
+      "persistent_name": "Jayne",
+      "universe": "Firefly",
+      "created_at": "2026-05-03T15:50:35.157-04:00",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "auth": {
+      "persistent_name": "Simon",
+      "universe": "Firefly",
+      "created_at": "2026-05-03T15:50:35.157-04:00",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "ui-admin": {
+      "persistent_name": "Inara",
+      "universe": "Firefly",
+      "created_at": "2026-05-03T15:50:35.157-04:00",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "test": {
+      "persistent_name": "Kaylee",
+      "universe": "Firefly",
+      "created_at": "2026-05-03T15:50:35.157-04:00",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "devops": {
+      "persistent_name": "Wash",
+      "universe": "Firefly",
+      "created_at": "2026-05-03T15:50:35.157-04:00",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "scribe": {
+      "persistent_name": "Scribe",
+      "universe": "System",
+      "created_at": "2026-05-03T15:50:35.157-04:00",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "ralph": {
+      "persistent_name": "Ralph",
+      "universe": "System",
+      "created_at": "2026-05-03T15:50:35.157-04:00",
+      "legacy_named": false,
+      "status": "active"
+    }
+  }
+}
