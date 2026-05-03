@@ -27,6 +27,11 @@ public class BaGetterEndpointBuilder
             name: Routes.IndexRouteName,
             pattern: "v3/index.json",
             defaults: new { controller = "ServiceIndex", action = "Get" });
+
+        endpoints.MapControllerRoute(
+            name: Routes.FeedIndexRouteName,
+            pattern: "{feed}/v3/index.json",
+            defaults: new { controller = "ServiceIndex", action = "Get" });
     }
 
     public void MapPackagePublishRoutes(IEndpointRouteBuilder endpoints)
@@ -36,16 +41,31 @@ public class BaGetterEndpointBuilder
             pattern: "api/v2/package",
             defaults: new { controller = "PackagePublish", action = "Upload" },
             constraints: new { httpMethod = new HttpMethodRouteConstraint("PUT") });
+        endpoints.MapControllerRoute(
+            name: Routes.FeedUploadPackageRouteName,
+            pattern: "{feed}/api/v2/package",
+            defaults: new { controller = "PackagePublish", action = "Upload" },
+            constraints: new { httpMethod = new HttpMethodRouteConstraint("PUT") });
 
         endpoints.MapControllerRoute(
             name: Routes.DeleteRouteName,
             pattern: "api/v2/package/{id}/{version}",
             defaults: new { controller = "PackagePublish", action = "Delete" },
             constraints: new { httpMethod = new HttpMethodRouteConstraint("DELETE") });
+        endpoints.MapControllerRoute(
+            name: Routes.FeedDeleteRouteName,
+            pattern: "{feed}/api/v2/package/{id}/{version}",
+            defaults: new { controller = "PackagePublish", action = "Delete" },
+            constraints: new { httpMethod = new HttpMethodRouteConstraint("DELETE") });
 
         endpoints.MapControllerRoute(
             name: Routes.RelistRouteName,
             pattern: "api/v2/package/{id}/{version}",
+            defaults: new { controller = "PackagePublish", action = "Relist" },
+            constraints: new { httpMethod = new HttpMethodRouteConstraint("POST") });
+        endpoints.MapControllerRoute(
+            name: Routes.FeedRelistRouteName,
+            pattern: "{feed}/api/v2/package/{id}/{version}",
             defaults: new { controller = "PackagePublish", action = "Relist" },
             constraints: new { httpMethod = new HttpMethodRouteConstraint("POST") });
     }
@@ -55,6 +75,11 @@ public class BaGetterEndpointBuilder
         endpoints.MapControllerRoute(
             name: Routes.UploadSymbolRouteName,
             pattern: "api/v2/symbol",
+            defaults: new { controller = "Symbol", action = "Upload" },
+            constraints: new { httpMethod = new HttpMethodRouteConstraint("PUT") });
+        endpoints.MapControllerRoute(
+            name: Routes.FeedUploadSymbolRouteName,
+            pattern: "{feed}/api/v2/symbol",
             defaults: new { controller = "Symbol", action = "Upload" },
             constraints: new { httpMethod = new HttpMethodRouteConstraint("PUT") });
 
@@ -75,16 +100,28 @@ public class BaGetterEndpointBuilder
             name: Routes.SearchRouteName,
             pattern: "v3/search",
             defaults: new { controller = "Search", action = "Search" });
+        endpoints.MapControllerRoute(
+            name: Routes.FeedSearchRouteName,
+            pattern: "{feed}/v3/search",
+            defaults: new { controller = "Search", action = "Search" });
 
         endpoints.MapControllerRoute(
             name: Routes.AutocompleteRouteName,
             pattern: "v3/autocomplete",
+            defaults: new { controller = "Search", action = "Autocomplete" });
+        endpoints.MapControllerRoute(
+            name: Routes.FeedAutocompleteRouteName,
+            pattern: "{feed}/v3/autocomplete",
             defaults: new { controller = "Search", action = "Autocomplete" });
 
         // This is an unofficial API to find packages that depend on a given package.
         endpoints.MapControllerRoute(
             name: Routes.DependentsRouteName,
             pattern: "v3/dependents",
+            defaults: new { controller = "Search", action = "Dependents" });
+        endpoints.MapControllerRoute(
+            name: Routes.FeedDependentsRouteName,
+            pattern: "{feed}/v3/dependents",
             defaults: new { controller = "Search", action = "Dependents" });
     }
 
@@ -94,10 +131,18 @@ public class BaGetterEndpointBuilder
            name: Routes.RegistrationIndexRouteName,
            pattern: "v3/registration/{id}/index.json",
            defaults: new { controller = "PackageMetadata", action = "RegistrationIndex" });
+        endpoints.MapControllerRoute(
+           name: Routes.FeedRegistrationIndexRouteName,
+           pattern: "{feed}/v3/registration/{id}/index.json",
+           defaults: new { controller = "PackageMetadata", action = "RegistrationIndex" });
 
         endpoints.MapControllerRoute(
             name: Routes.RegistrationLeafRouteName,
             pattern: "v3/registration/{id}/{version}.json",
+            defaults: new { controller = "PackageMetadata", action = "RegistrationLeaf" });
+        endpoints.MapControllerRoute(
+            name: Routes.FeedRegistrationLeafRouteName,
+            pattern: "{feed}/v3/registration/{id}/{version}.json",
             defaults: new { controller = "PackageMetadata", action = "RegistrationLeaf" });
     }
 
@@ -107,25 +152,45 @@ public class BaGetterEndpointBuilder
             name: Routes.PackageVersionsRouteName,
             pattern: "v3/package/{id}/index.json",
             defaults: new { controller = "PackageContent", action = "GetPackageVersions" });
+        endpoints.MapControllerRoute(
+            name: Routes.FeedPackageVersionsRouteName,
+            pattern: "{feed}/v3/package/{id}/index.json",
+            defaults: new { controller = "PackageContent", action = "GetPackageVersions" });
 
         endpoints.MapControllerRoute(
             name: Routes.PackageDownloadRouteName,
             pattern: "v3/package/{id}/{version}/{idVersion}.nupkg",
+            defaults: new { controller = "PackageContent", action = "DownloadPackage" });
+        endpoints.MapControllerRoute(
+            name: Routes.FeedPackageDownloadRouteName,
+            pattern: "{feed}/v3/package/{id}/{version}/{idVersion}.nupkg",
             defaults: new { controller = "PackageContent", action = "DownloadPackage" });
 
         endpoints.MapControllerRoute(
             name: Routes.PackageDownloadManifestRouteName,
             pattern: "v3/package/{id}/{version}/{id2}.nuspec",
             defaults: new { controller = "PackageContent", action = "DownloadNuspec" });
+        endpoints.MapControllerRoute(
+            name: Routes.FeedPackageDownloadManifestRouteName,
+            pattern: "{feed}/v3/package/{id}/{version}/{id2}.nuspec",
+            defaults: new { controller = "PackageContent", action = "DownloadNuspec" });
 
         endpoints.MapControllerRoute(
             name: Routes.PackageDownloadReadmeRouteName,
             pattern: "v3/package/{id}/{version}/readme",
             defaults: new { controller = "PackageContent", action = "DownloadReadme" });
+        endpoints.MapControllerRoute(
+            name: Routes.FeedPackageDownloadReadmeRouteName,
+            pattern: "{feed}/v3/package/{id}/{version}/readme",
+            defaults: new { controller = "PackageContent", action = "DownloadReadme" });
 
         endpoints.MapControllerRoute(
             name: Routes.PackageDownloadIconRouteName,
             pattern: "v3/package/{id}/{version}/icon",
+            defaults: new { controller = "PackageContent", action = "DownloadIcon" });
+        endpoints.MapControllerRoute(
+            name: Routes.FeedPackageDownloadIconRouteName,
+            pattern: "{feed}/v3/package/{id}/{version}/icon",
             defaults: new { controller = "PackageContent", action = "DownloadIcon" });
     }
 }

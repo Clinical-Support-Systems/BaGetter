@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using BaGetter.Core;
+using BaGetter.Core.Configuration;
 using Newtonsoft.Json;
 
 namespace BaGetter.Azure
@@ -13,6 +14,14 @@ namespace BaGetter.Azure
             ArgumentNullException.ThrowIfNull(packageId);
 
             return packageId.ToLowerInvariant();
+        }
+
+        public static string GetPartitionKey(string feedPrefix, string packageId)
+        {
+            ArgumentNullException.ThrowIfNull(feedPrefix);
+            ArgumentNullException.ThrowIfNull(packageId);
+
+            return $"{feedPrefix.ToLowerInvariant()}|{packageId.ToLowerInvariant()}";
         }
 
         public static string GetRowKey(NuGet.Versioning.NuGetVersion version)
@@ -63,6 +72,31 @@ namespace BaGetter.Azure
                 TargetFrameworks = SerializeList(package.TargetFrameworks, f => f.Moniker)
             };
 
+            return entity;
+        }
+
+        public static PackageEntity GetEntity(Package package, FeedContext feedContext, BaGetterOptions options)
+        {
+            ArgumentNullException.ThrowIfNull(package);
+            ArgumentNullException.ThrowIfNull(feedContext);
+            ArgumentNullException.ThrowIfNull(options);
+
+            var entity = GetEntity(package);
+            if (feedContext.IsLegacySingleFeed || string.IsNullOrWhiteSpace(feedContext.Name))
+            {
+                return entity;
+            }
+
+            var feedPrefix = feedContext.Name;
+            if (FeedUtility.TryFindFeed(options, feedContext.Name, out var feed)
+                && !string.IsNullOrWhiteSpace(feed.Database?.PartitionPrefix))
+            {
+                feedPrefix = feed.Database.PartitionPrefix;
+            }
+
+            entity.FeedName = feedContext.Name;
+            entity.PartitionKey = GetPartitionKey(feedPrefix, package.Id);
+            entity.RowKey = GetRowKey(package.Version);
             return entity;
         }
 

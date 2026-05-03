@@ -31,7 +31,13 @@ public class PackageIndexingServiceInMemoryTests
     {
         _packages = new InMemoryPackageDatabase();
         var storageService = new NullStorageService();
-        _storage = new PackageStorageService(storageService, Mock.Of<ILogger<PackageStorageService>>());
+        var rootOptions = new Mock<IOptionsSnapshot<BaGetterOptions>>();
+        rootOptions.SetupGet(o => o.Value).Returns(new BaGetterOptions());
+        _storage = new PackageStorageService(
+            storageService,
+            new FeedContextAccessor { Current = new FeedContext { IsLegacySingleFeed = true } },
+            rootOptions.Object,
+            Mock.Of<ILogger<PackageStorageService>>());
 
         _search = new Mock<ISearchIndexer>(MockBehavior.Strict);
         _options = new();

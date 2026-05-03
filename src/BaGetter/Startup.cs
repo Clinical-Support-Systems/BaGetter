@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using HealthCheckOptions = Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions;
 
@@ -79,12 +80,25 @@ public class Startup
             app.UseStatusCodePages();
         }
 
+        // Diagnostic: log all requests and responses for debugging push issues
+        app.Use(async (context, next) =>
+        {
+            var logger = context.RequestServices.GetService<ILoggerFactory>()?.CreateLogger("RequestDiagnostic");
+            logger?.LogWarning(">> {Method} {Path} ContentType={ContentType} ContentLength={ContentLength}",
+                context.Request.Method, context.Request.Path, context.Request.ContentType, context.Request.ContentLength);
+            await next();
+            logger?.LogWarning("<< {Method} {Path} => {StatusCode}",
+                context.Request.Method, context.Request.Path, context.Response.StatusCode);
+        });
+
         app.UseForwardedHeaders();
         app.UsePathBase(options.PathBase);
 
         app.UseStaticFiles();
         app.UseAuthentication();
         app.UseRouting();
+        app.UseFeedResolutionMiddleware();
+        app.UseFeedReadAuthenticationMiddleware();
         app.UseAuthorization();
 
         app.UseCors(ConfigureBaGetterServer.CorsPolicy);

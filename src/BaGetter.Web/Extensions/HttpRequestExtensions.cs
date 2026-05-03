@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +24,9 @@ public static class HttpRequestExtensions
             }
             else
             {
+                // Enable buffering so the body can be read even if form parsing consumed it.
+                request.EnableBuffering();
+                request.Body.Position = 0;
                 rawUploadStream = request.Body;
             }
 

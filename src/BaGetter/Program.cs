@@ -46,6 +46,24 @@ public class Program
                     await importer.ImportAsync(cancellationToken);
                 });
             });
+
+            import.Command("feeds", feeds =>
+            {
+                var to = feeds.Option("--to <FEED>", "Target feed name (default: internal)", CommandOptionType.SingleValue);
+                var execute = feeds.Option("--execute", "Execute changes. Without this option, runs a dry-run only.", CommandOptionType.NoValue);
+
+                feeds.OnExecuteAsync(async cancellationToken =>
+                {
+                    using var scope = host.Services.CreateScope();
+                    var migrator = scope.ServiceProvider.GetRequiredService<IFeedMigrationService>();
+                    var targetFeed = to.HasValue() ? to.Value() : "internal";
+                    var dryRun = !execute.HasValue();
+
+                    var result = await migrator.MigrateLegacyRootToFeedAsync(targetFeed, dryRun, cancellationToken);
+                    Console.WriteLine(
+                        $"Feed migration dryRun={dryRun} tableCopied={result.TableCopied} tableSkipped={result.TableSkipped} blobCopied={result.BlobCopied} blobSkipped={result.BlobSkipped}");
+                });
+            });
         });
 
         app.Option("--urls", "The URLs that BaGetter should bind to.", CommandOptionType.SingleValue);

@@ -6,6 +6,10 @@
 @inject IOptions<StatisticsOptions> StatisticsOptions
 @inject ApplicationVersion Version
 
+@{
+    var currentFeed = Context.Request.RouteValues["feed"]?.ToString();
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,11 +34,12 @@
                 <div class="row">
                     <div id="navbar" class="col-sm-12">
                         <ul class="nav navbar-nav" role="tablist">
-                            <li role="presentation"><a asp-area="" asp-page="/Index" role="tab" nav-link><span>Packages</span></a></li>
-                            <li role="presentation"><a asp-area="" asp-page="/Upload" role="tab" nav-link><span>Upload</span></a></li>
+                            <li role="presentation"><a asp-area="" asp-page="/Index" role="tab" nav-link><span>Feeds</span></a></li>
+                            <li role="presentation"><a asp-area="" asp-page="/Index" asp-route-feed="@currentFeed" role="tab" nav-link><span>Packages</span></a></li>
+                            <li role="presentation"><a asp-area="" asp-page="/Upload" asp-route-feed="@currentFeed" role="tab" nav-link><span>Upload</span></a></li>
                             @if (StatisticsOptions.Value.EnableStatisticsPage)
                             {
-                                <li role="presentation"><a asp-area="" asp-page="/Statistics" role="tab" nav-link><span>Statistics</span></a></li>
+                                <li role="presentation"><a asp-area="" asp-page="/Statistics" asp-route-feed="@currentFeed" role="tab" nav-link><span>Statistics</span></a></li>
                             }
                             <li role="presentation">
                                 <a role="tab" href="https://www.bagetter.com/docs" target="_blank" rel="noopener noreferrer">
@@ -47,7 +52,7 @@
             </div>
             <div class="container search-container">
                 <div class="row">
-                    <form class="col-sm-12" action="@Url.Page("/Index")" method="get">
+                    <form class="col-sm-12" action="@Url.Page("/Index", new { feed = currentFeed })" method="get">
                         <div class="input-group">
                             <input type="text"
                                    name="q"

@@ -6,4 +6,6 @@ namespace BaGetter.Core;
 public interface IAuthenticationService
 {
     Task<bool> AuthenticateAsync(string apiKey, CancellationToken cancellationToken);
+
+    Task<bool> AuthenticateAsync(string feedName, string apiKey, CancellationToken cancellationToken);
 }

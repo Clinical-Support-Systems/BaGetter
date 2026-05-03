@@ -12,6 +12,7 @@ namespace BaGetter.Azure
     /// </summary>
     public class PackageEntity : ITableEntity, IDownloadCount, IListed
     {
+        public string FeedName { get; set; }
         public string Id { get; set; }
         public string NormalizedVersion { get; set; }
         public string OriginalVersion { get; set; }

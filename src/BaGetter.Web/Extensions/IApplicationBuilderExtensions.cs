@@ -11,4 +11,18 @@ public static class IApplicationBuilderExtensions
 
         return app.UseMiddleware<OperationCancelledMiddleware>();
     }
+
+    public static IApplicationBuilder UseFeedResolutionMiddleware(this IApplicationBuilder app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        return app.UseMiddleware<FeedResolutionMiddleware>();
+    }
+
+    public static IApplicationBuilder UseFeedReadAuthenticationMiddleware(this IApplicationBuilder app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        return app.UseMiddleware<FeedReadAuthenticationMiddleware>();
+    }
 }

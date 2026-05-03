@@ -79,11 +79,11 @@ public static partial class DependencyInjectionExtensions
         services.TryAddSingleton<IFrameworkCompatibilityService, FrameworkCompatibilityService>();
         services.TryAddSingleton<IPackageDownloadsSource, PackageDownloadsJsonSource>();
 
-        services.TryAddSingleton<ISearchResponseBuilder, SearchResponseBuilder>();
+        services.TryAddTransient<ISearchResponseBuilder, SearchResponseBuilder>();
         services.TryAddSingleton<NuGetClient>();
         services.TryAddSingleton<NullSearchIndexer>();
         services.TryAddSingleton<NullSearchService>();
-        services.TryAddSingleton<RegistrationBuilder>();
+        services.TryAddTransient<RegistrationBuilder>();
         services.TryAddSingleton<SystemTime>();
         services.TryAddSingleton<ValidateStartupOptions>();
 
@@ -103,6 +103,8 @@ public static partial class DependencyInjectionExtensions
         services.TryAddTransient<ISymbolIndexingService, SymbolIndexingService>();
         services.TryAddTransient<ISymbolStorageService, SymbolStorageService>();
         services.TryAddTransient<IStatisticsService, StatisticsService>();
+        services.TryAddTransient<NullFeedMigrationService>();
+        services.TryAddTransient<IFeedMigrationService, NullFeedMigrationService>();
 
         services.TryAddTransient<DbContextStatisticsSource>();
         services.TryAddTransient<DatabaseSearchService>();

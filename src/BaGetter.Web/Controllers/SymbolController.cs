@@ -17,6 +17,7 @@ public class SymbolController : Controller
     private readonly ISymbolIndexingService _indexer;
     private readonly ISymbolStorageService _storage;
     private readonly IOptionsSnapshot<BaGetterOptions> _options;
+    private readonly IFeedContextAccessor _feed;
     private readonly ILogger<SymbolController> _logger;
 
     public SymbolController(
@@ -24,19 +25,21 @@ public class SymbolController : Controller
         ISymbolIndexingService indexer,
         ISymbolStorageService storage,
         IOptionsSnapshot<BaGetterOptions> options,
+        IFeedContextAccessor feed,
         ILogger<SymbolController> logger)
     {
         _authentication = authentication ?? throw new ArgumentNullException(nameof(authentication));
         _indexer = indexer ?? throw new ArgumentNullException(nameof(indexer));
         _storage = storage ?? throw new ArgumentNullException(nameof(storage));
         _options = options ?? throw new ArgumentNullException(nameof(options));
+        _feed = feed ?? throw new ArgumentNullException(nameof(feed));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     // See: https://docs.microsoft.com/en-us/nuget/api/package-publish-resource#push-a-package
     public async Task Upload(CancellationToken cancellationToken)
     {
-        if (_options.Value.IsReadOnlyMode || !await _authentication.AuthenticateAsync(Request.GetApiKey(), cancellationToken))
+        if (_options.Value.IsReadOnlyMode || !await _authentication.AuthenticateAsync(_feed.Current?.Name, Request.GetApiKey(), cancellationToken))
         {
             HttpContext.Response.StatusCode = 401;
             return;

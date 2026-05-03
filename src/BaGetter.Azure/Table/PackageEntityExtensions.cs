@@ -12,7 +12,7 @@ namespace BaGetter.Azure
         {
             return new Package
             {
-                Id = entity.PartitionKey,
+                Id = entity.Id,
                 NormalizedVersionString = entity.NormalizedVersion,
                 OriginalVersionString = entity.OriginalVersion,
                 Authors = JsonSerializer.Deserialize<string[]>(entity.Authors),

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using BaGetter.Core.Configuration;
 
 namespace BaGetter.Core;
@@ -73,4 +74,8 @@ public class BaGetterOptions
     public StatisticsOptions Statistics { get; set; }
 
     public NugetAuthenticationOptions Authentication { get; set; }
+
+    public FeedRoutingOptions FeedRouting { get; set; } = new();
+
+    public List<FeedOptions> Feeds { get; set; } = [];
 }

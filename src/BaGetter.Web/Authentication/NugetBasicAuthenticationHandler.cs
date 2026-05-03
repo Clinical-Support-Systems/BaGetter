@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Text;
 using System.Threading.Tasks;
@@ -87,14 +88,63 @@ public class NugetBasicAuthenticationHandler : AuthenticationHandler<Authenticat
 
     private bool IsAnonymousAllowed()
     {
-        return bagetterOptions.Value.Authentication is null ||
-            bagetterOptions.Value.Authentication.Credentials is null ||
-            bagetterOptions.Value.Authentication.Credentials.Length == 0 ||
-            bagetterOptions.Value.Authentication.Credentials.All(a => string.IsNullOrWhiteSpace(a.Username) && string.IsNullOrWhiteSpace(a.Password));
+        var options = bagetterOptions.Value;
+        var feedName = Request.RouteValues[FeedContext.RouteValueName]?.ToString();
+        if (FeedUtility.IsMultiFeedConfigured(options)
+            && FeedUtility.TryFindFeed(options, feedName, out var feed)
+            && feed.RequireReadAuthentication)
+        {
+            return false;
+        }
+
+        return options.Authentication is null ||
+            options.Authentication.Credentials is null ||
+            options.Authentication.Credentials.Length == 0 ||
+            options.Authentication.Credentials.All(a => string.IsNullOrWhiteSpace(a.Username) && string.IsNullOrWhiteSpace(a.Password));
     }
 
     private bool ValidateCredentials(string username, string password)
     {
-        return bagetterOptions.Value.Authentication.Credentials.Any(a => a.Username.Equals(username, StringComparison.OrdinalIgnoreCase) && a.Password == password);
+        var options = bagetterOptions.Value;
+        if (options.Authentication?.Credentials?.Any(a =>
+            a.Username.Equals(username, StringComparison.OrdinalIgnoreCase) && a.Password == password) == true)
+        {
+            return true;
+        }
+
+        var feedName = Request.RouteValues[FeedContext.RouteValueName]?.ToString();
+        if (!FeedUtility.IsMultiFeedConfigured(options) || !FeedUtility.TryFindFeed(options, feedName, out var feed))
+        {
+            return false;
+        }
+
+        if (!feed.RequireReadAuthentication)
+        {
+            return false;
+        }
+
+        if (feed.ApiKeys == null || feed.ApiKeys.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var key in feed.ApiKeys)
+        {
+            if (!string.IsNullOrWhiteSpace(key.Key) && key.Key == password)
+            {
+                return true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(key.KeySha256))
+            {
+                var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(password)));
+                if (string.Equals(hash, key.KeySha256, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

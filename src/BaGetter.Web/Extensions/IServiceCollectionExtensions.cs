@@ -26,10 +26,20 @@ public static class IServiceCollectionExtensions
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             });
 
-        services.AddRazorPages();
+        services.AddRazorPages(options =>
+        {
+            options.Conventions.AddPageRoute("/Index", "{feed}");
+            options.Conventions.AddPageRoute("/Index", "packages");
+            options.Conventions.AddPageRoute("/Index", "{feed}/packages");
+            options.Conventions.AddPageRoute("/Package", "{feed}/packages/{id}/{version?}");
+            options.Conventions.AddPageRoute("/Upload", "{feed}/upload");
+            options.Conventions.AddPageRoute("/Statistics", "{feed}/stats");
+        });
 
         services.AddHttpContextAccessor();
         services.AddTransient<IUrlGenerator, BaGetterUrlGenerator>();
+        services.AddScoped<IFeedContextAccessor, FeedContextAccessor>();
+        services.AddScoped<IFeedResolver, RequestFeedResolver>();
 
         services.AddSingleton(ApplicationVersionHelper.GetVersion());
 
@@ -42,6 +52,9 @@ public static class IServiceCollectionExtensions
         services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<ISearchService>);
         services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<ISearchIndexer>);
         services.AddTransient(DependencyInjectionExtensions.GetServiceFromProviders<IStatisticsSource>);
+        services.AddTransient<IFeedMigrationService>(provider =>
+            DependencyInjectionExtensions.GetServiceFromProviders<IFeedMigrationService>(provider)
+            ?? provider.GetRequiredService<NullFeedMigrationService>());
 
         return services;
     }

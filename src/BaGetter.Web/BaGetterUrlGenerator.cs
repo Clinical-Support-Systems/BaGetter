@@ -22,8 +22,8 @@ public class BaGetterUrlGenerator : IUrlGenerator
     {
         return _linkGenerator.GetUriByRouteValues(
             _httpContextAccessor.HttpContext,
-            Routes.IndexRouteName,
-            values: null);
+            GetRouteName(Routes.IndexRouteName, Routes.FeedIndexRouteName),
+            values: FeedRouteValues());
     }
 
     public string GetPackageContentResourceUrl()
@@ -40,40 +40,40 @@ public class BaGetterUrlGenerator : IUrlGenerator
     {
         return _linkGenerator.GetUriByRouteValues(
             _httpContextAccessor.HttpContext,
-            Routes.UploadPackageRouteName,
-            values: null);
+            GetRouteName(Routes.UploadPackageRouteName, Routes.FeedUploadPackageRouteName),
+            values: FeedRouteValues());
     }
 
     public string GetSymbolPublishResourceUrl()
     {
         return _linkGenerator.GetUriByRouteValues(
             _httpContextAccessor.HttpContext,
-            Routes.UploadSymbolRouteName,
-            values: null);
+            GetRouteName(Routes.UploadSymbolRouteName, Routes.FeedUploadSymbolRouteName),
+            values: FeedRouteValues());
     }
 
     public string GetSearchResourceUrl()
     {
         return _linkGenerator.GetUriByRouteValues(
             _httpContextAccessor.HttpContext,
-            Routes.SearchRouteName,
-            values: null);
+            GetRouteName(Routes.SearchRouteName, Routes.FeedSearchRouteName),
+            values: FeedRouteValues());
     }
 
     public string GetAutocompleteResourceUrl()
     {
         return _linkGenerator.GetUriByRouteValues(
             _httpContextAccessor.HttpContext,
-            Routes.AutocompleteRouteName,
-            values: null);
+            GetRouteName(Routes.AutocompleteRouteName, Routes.FeedAutocompleteRouteName),
+            values: FeedRouteValues());
     }
 
     public string GetRegistrationIndexUrl(string id)
     {
         return _linkGenerator.GetUriByRouteValues(
             _httpContextAccessor.HttpContext,
-            Routes.RegistrationIndexRouteName,
-            values: new { Id = id.ToLowerInvariant() });
+            GetRouteName(Routes.RegistrationIndexRouteName, Routes.FeedRegistrationIndexRouteName),
+            values: BuildRouteValues(new { Id = id.ToLowerInvariant() }));
     }
 
     public string GetRegistrationPageUrl(string id, NuGetVersion lower, NuGetVersion upper)
@@ -86,20 +86,20 @@ public class BaGetterUrlGenerator : IUrlGenerator
     {
         return _linkGenerator.GetUriByRouteValues(
             _httpContextAccessor.HttpContext,
-            Routes.RegistrationLeafRouteName,
-            values: new
+            GetRouteName(Routes.RegistrationLeafRouteName, Routes.FeedRegistrationLeafRouteName),
+            values: BuildRouteValues(new
             {
                 Id = id.ToLowerInvariant(),
                 Version = version.ToNormalizedString().ToLowerInvariant(),
-            });
+            }));
     }
 
     public string GetPackageVersionsUrl(string id)
     {
         return _linkGenerator.GetUriByRouteValues(
             _httpContextAccessor.HttpContext,
-            Routes.PackageVersionsRouteName,
-            values: new { Id = id.ToLowerInvariant() });
+            GetRouteName(Routes.PackageVersionsRouteName, Routes.FeedPackageVersionsRouteName),
+            values: BuildRouteValues(new { Id = id.ToLowerInvariant() }));
     }
 
     public string GetPackageDownloadUrl(string id, NuGetVersion version)
@@ -109,13 +109,13 @@ public class BaGetterUrlGenerator : IUrlGenerator
 
         return _linkGenerator.GetUriByRouteValues(
             _httpContextAccessor.HttpContext,
-            Routes.PackageDownloadRouteName,
-            values: new
+            GetRouteName(Routes.PackageDownloadRouteName, Routes.FeedPackageDownloadRouteName),
+            values: BuildRouteValues(new
             {
                 Id = id,
                 Version = versionString,
                 IdVersion = $"{id}.{versionString}"
-            });
+            }));
     }
 
     public string GetPackageManifestDownloadUrl(string id, NuGetVersion version)
@@ -125,13 +125,13 @@ public class BaGetterUrlGenerator : IUrlGenerator
 
         return _linkGenerator.GetUriByRouteValues(
             _httpContextAccessor.HttpContext,
-            Routes.PackageDownloadRouteName,
-            values: new
+            GetRouteName(Routes.PackageDownloadManifestRouteName, Routes.FeedPackageDownloadManifestRouteName),
+            values: BuildRouteValues(new
             {
                 Id = id,
                 Version = versionString,
                 Id2 = id,
-            });
+            }));
     }
 
     public string GetPackageIconDownloadUrl(string id, NuGetVersion version)
@@ -141,12 +141,12 @@ public class BaGetterUrlGenerator : IUrlGenerator
 
         return _linkGenerator.GetUriByRouteValues(
             _httpContextAccessor.HttpContext,
-            Routes.PackageDownloadIconRouteName,
-            values: new
+            GetRouteName(Routes.PackageDownloadIconRouteName, Routes.FeedPackageDownloadIconRouteName),
+            values: BuildRouteValues(new
             {
                 Id = id,
                 Version = versionString
-            });
+            }));
     }
 
     private string AbsoluteUrl(string relativePath)
@@ -160,5 +160,35 @@ public class BaGetterUrlGenerator : IUrlGenerator
             request.PathBase.ToUriComponent(),
             "/",
             relativePath);
+    }
+
+    private string GetRouteName(string rootRouteName, string feedRouteName)
+    {
+        var request = _httpContextAccessor.HttpContext?.Request;
+        var feed = request?.RouteValues[FeedContext.RouteValueName]?.ToString();
+        return string.IsNullOrWhiteSpace(feed) ? rootRouteName : feedRouteName;
+    }
+
+    private object FeedRouteValues()
+    {
+        var request = _httpContextAccessor.HttpContext?.Request;
+        var feed = request?.RouteValues[FeedContext.RouteValueName]?.ToString();
+        return string.IsNullOrWhiteSpace(feed) ? null : new { feed };
+    }
+
+    private object BuildRouteValues(object values)
+    {
+        var request = _httpContextAccessor.HttpContext?.Request;
+        var feed = request?.RouteValues[FeedContext.RouteValueName]?.ToString();
+        if (string.IsNullOrWhiteSpace(feed))
+        {
+            return values;
+        }
+
+        var dict = new RouteValueDictionary(values)
+        {
+            [FeedContext.RouteValueName] = feed,
+        };
+        return dict;
     }
 }

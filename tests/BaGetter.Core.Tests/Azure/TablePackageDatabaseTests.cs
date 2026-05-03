@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using BaGetter.Azure;
+using BaGetter.Core.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -147,11 +148,15 @@ public class TablePackageDatabaseTests
     {
         var serviceClient = new Mock<TableServiceClient>(MockBehavior.Strict);
         serviceClient.Setup(c => c.GetTableClient(TableName)).Returns(table.Object);
+        var root = new Mock<IOptionsSnapshot<BaGetterOptions>>(MockBehavior.Strict);
+        root.SetupGet(r => r.Value).Returns(new BaGetterOptions());
 
         return new TablePackageDatabase(
             serviceClient.Object,
             NullLogger<TablePackageDatabase>.Instance,
-            Options.Create(new AzureTableOptions { TableName = TableName }));
+            Options.Create(new AzureTableOptions { TableName = TableName }),
+            new FeedContextAccessor { Current = new FeedContext { IsLegacySingleFeed = true } },
+            root.Object);
     }
 
     private static AsyncPageable<PackageEntity> CreateAsyncPageable(params PackageEntity[] entities)

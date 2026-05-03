@@ -3,13 +3,14 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NuGet.Versioning;
 
 namespace BaGetter.Core;
 
 public class PackageStorageService : IPackageStorageService
 {
-    private const string PackagesPathPrefix = "packages";
+    private const string LegacyPackagesPathPrefix = "packages";
 
     // See: https://github.com/NuGet/NuGetGallery/blob/73a5c54629056b25b3a59960373e8fef88abff36/src/NuGetGallery.Core/CoreConstants.cs#L19
     private const string PackageContentType = "binary/octet-stream";
@@ -18,13 +19,19 @@ public class PackageStorageService : IPackageStorageService
     private const string IconContentType = "image/xyz";
 
     private readonly IStorageService _storage;
+    private readonly IFeedContextAccessor _feed;
+    private readonly IOptionsSnapshot<BaGetterOptions> _options;
     private readonly ILogger<PackageStorageService> _logger;
 
     public PackageStorageService(
         IStorageService storage,
+        IFeedContextAccessor feed,
+        IOptionsSnapshot<BaGetterOptions> options,
         ILogger<PackageStorageService> logger)
     {
         _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        _feed = feed ?? throw new ArgumentNullException(nameof(feed));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -197,7 +204,7 @@ public class PackageStorageService : IPackageStorageService
             // users migrate to the latest version of BaGetter.
             // See https://github.com/loic-sharma/BaGet/issues/298
             _logger.LogError(
-                $"Unable to find the '{PackagesPathPrefix}' folder. " +
+                $"Unable to find the '{LegacyPackagesPathPrefix}' folder. " +
                 "If you've recently upgraded BaGet, please make sure this folder starts with a lowercased letter. " +
                 "For more information, please see https://github.com/loic-sharma/BaGet/issues/298");
             throw;
@@ -207,7 +214,7 @@ public class PackageStorageService : IPackageStorageService
     private string PackagePath(string lowercasedId, string lowercasedNormalizedVersion)
     {
         return Path.Combine(
-            PackagesPathPrefix,
+            GetPackagesPathPrefix(),
             lowercasedId,
             lowercasedNormalizedVersion,
             $"{lowercasedId}.{lowercasedNormalizedVersion}.nupkg");
@@ -216,7 +223,7 @@ public class PackageStorageService : IPackageStorageService
     private string NuspecPath(string lowercasedId, string lowercasedNormalizedVersion)
     {
         return Path.Combine(
-            PackagesPathPrefix,
+            GetPackagesPathPrefix(),
             lowercasedId,
             lowercasedNormalizedVersion,
             $"{lowercasedId}.nuspec");
@@ -225,7 +232,7 @@ public class PackageStorageService : IPackageStorageService
     private string ReadmePath(string lowercasedId, string lowercasedNormalizedVersion)
     {
         return Path.Combine(
-            PackagesPathPrefix,
+            GetPackagesPathPrefix(),
             lowercasedId,
             lowercasedNormalizedVersion,
             "readme");
@@ -234,9 +241,28 @@ public class PackageStorageService : IPackageStorageService
     private string IconPath(string lowercasedId, string lowercasedNormalizedVersion)
     {
         return Path.Combine(
-            PackagesPathPrefix,
+            GetPackagesPathPrefix(),
             lowercasedId,
             lowercasedNormalizedVersion,
             "icon");
+    }
+
+    private string GetPackagesPathPrefix()
+    {
+        var options = _options.Value;
+        if (!FeedUtility.IsMultiFeedConfigured(options))
+        {
+            return LegacyPackagesPathPrefix;
+        }
+
+        var feedName = _feed.Current?.Name;
+        if (!FeedUtility.TryFindFeed(options, feedName, out var feed))
+        {
+            return LegacyPackagesPathPrefix;
+        }
+
+        return string.IsNullOrWhiteSpace(feed.Storage?.Prefix)
+            ? feed.Name.ToLowerInvariant()
+            : feed.Storage.Prefix.Trim().Trim('/');
     }
 }

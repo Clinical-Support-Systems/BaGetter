@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using BaGetter.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
@@ -16,6 +18,27 @@ namespace BaGetter;
 public class ValidateBaGetterOptions
     : IValidateOptions<BaGetterOptions>
 {
+    private static readonly Regex FeedNameRegex = new("^[a-z][a-z0-9-]{1,62}[a-z0-9]$", RegexOptions.Compiled);
+
+    private static readonly HashSet<string> ReservedFeedNames
+        = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "api",
+            "v2",
+            "v3",
+            "v3-flatcontainer",
+            "package",
+            "packages",
+            "upload",
+            "stats",
+            "statistics",
+            "health",
+            "_content",
+            "wwwroot",
+            "css",
+            "admin",
+        };
+
     private static readonly HashSet<string> ValidDatabaseTypes
         = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -76,8 +99,69 @@ public class ValidateBaGetterOptions
                 $"Allowed values: {string.Join(", ", ValidSearchTypes)}");
         }
 
+        ValidateFeeds(options, failures);
+
         if (failures.Count != 0) return ValidateOptionsResult.Fail(failures);
 
         return ValidateOptionsResult.Success;
+    }
+
+    private static void ValidateFeeds(BaGetterOptions options, List<string> failures)
+    {
+        if (!FeedUtility.IsMultiFeedConfigured(options))
+        {
+            return;
+        }
+
+        // Multi-feed support works with any storage/database provider.
+        // Feed-aware path prefixing is handled by PackageStorageService.
+
+        if (options.Feeds == null || options.Feeds.Count == 0)
+        {
+            failures.Add("The 'Feeds' configuration cannot be empty when multi-feed mode is enabled.");
+            return;
+        }
+
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var feed in options.Feeds)
+        {
+            if (string.IsNullOrWhiteSpace(feed.Name))
+            {
+                failures.Add("Each feed must define a non-empty 'Name'.");
+                continue;
+            }
+
+            if (!FeedNameRegex.IsMatch(feed.Name))
+            {
+                failures.Add($"Feed '{feed.Name}' has an invalid name. Names must match regex '{FeedNameRegex}'.");
+            }
+
+            if (ReservedFeedNames.Contains(feed.Name))
+            {
+                failures.Add($"Feed '{feed.Name}' is a reserved name.");
+            }
+
+            if (!names.Add(feed.Name))
+            {
+                failures.Add($"Duplicate feed name '{feed.Name}' was configured.");
+            }
+
+            if (feed.Name.Equals("licensed", StringComparison.OrdinalIgnoreCase) && !feed.RequireReadAuthentication)
+            {
+                failures.Add("The 'licensed' feed must enable read authentication before use.");
+            }
+        }
+
+        var defaultFeed = options.FeedRouting?.DefaultFeed ?? "internal";
+        if (!names.Contains(defaultFeed))
+        {
+            failures.Add($"The default feed '{defaultFeed}' is not present in 'Feeds'.");
+        }
+
+        var hasGlobalReadCredentials = options.Authentication?.Credentials is { Length: > 0 };
+        if (options.Feeds.Any(f => f.RequireReadAuthentication && f.ApiKeys.Count == 0 && !hasGlobalReadCredentials))
+        {
+            failures.Add("Feeds that require read authentication must define authentication tokens/keys.");
+        }
     }
 }

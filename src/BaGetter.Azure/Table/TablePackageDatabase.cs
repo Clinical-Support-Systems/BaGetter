@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using BaGetter.Core;
+using BaGetter.Core.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Versioning;
@@ -22,24 +23,30 @@ namespace BaGetter.Azure
 
         private readonly TableClient _table;
         private readonly ILogger<TablePackageDatabase> _logger;
+        private readonly IFeedContextAccessor _feed;
+        private readonly IOptionsSnapshot<BaGetterOptions> _root;
 
         public TablePackageDatabase(
             TableServiceClient client,
             ILogger<TablePackageDatabase> logger,
-            IOptions<AzureTableOptions> options)
+            IOptions<AzureTableOptions> options,
+            IFeedContextAccessor feed,
+            IOptionsSnapshot<BaGetterOptions> root)
         {
             ArgumentNullException.ThrowIfNull(client);
             ArgumentNullException.ThrowIfNull(logger);
 
             _table = client.GetTableClient(options.Value.TableName);
             _logger = logger;
+            _feed = feed ?? throw new ArgumentNullException(nameof(feed));
+            _root = root ?? throw new ArgumentNullException(nameof(root));
         }
 
         public async Task<PackageAddResult> AddAsync(Package package, CancellationToken cancellationToken)
         {
             try
             {
-                var entity = TableOperationBuilder.GetEntity(package);
+                var entity = TableOperationBuilder.GetEntity(package, _feed.Current ?? new FeedContext { IsLegacySingleFeed = true }, _root.Value);
 
                 await _table.AddEntityAsync(entity, cancellationToken);
             }
@@ -56,7 +63,7 @@ namespace BaGetter.Azure
             NuGetVersion version,
             CancellationToken cancellationToken)
         {
-            var partitionKey = TableOperationBuilder.GetPartitionKey(id);
+            var partitionKey = GetPartitionKey(id);
             var rowKey = TableOperationBuilder.GetRowKey(version);
             var attempt = 0;
 
@@ -106,7 +113,7 @@ namespace BaGetter.Azure
 
         public async Task<bool> ExistsAsync(string id, CancellationToken cancellationToken)
         {
-            var partitionKey = TableOperationBuilder.GetPartitionKey(id);
+            var partitionKey = GetPartitionKey(id);
             var filter = TableClient.CreateQueryFilter<PackageEntity>(p => p.PartitionKey == partitionKey);
             var query = _table.QueryAsync<PackageEntity>(
                 filter,
@@ -127,7 +134,7 @@ namespace BaGetter.Azure
             NuGetVersion version,
             CancellationToken cancellationToken)
         {
-            var partitionKey = TableOperationBuilder.GetPartitionKey(id);
+            var partitionKey = GetPartitionKey(id);
             var rowKey = TableOperationBuilder.GetRowKey(version);
 
             try
@@ -149,7 +156,7 @@ namespace BaGetter.Azure
         public async Task<IReadOnlyList<Package>> FindAsync(string id, bool includeUnlisted, CancellationToken cancellationToken)
         {
             const int maxPerPage = 500;
-            var partitionKey = TableOperationBuilder.GetPartitionKey(id);
+            var partitionKey = GetPartitionKey(id);
             var partitionFilter = TableClient.CreateQueryFilter<PackageEntity>(p => p.PartitionKey == partitionKey);
             var filter = includeUnlisted
                 ? partitionFilter
@@ -172,7 +179,7 @@ namespace BaGetter.Azure
             CancellationToken cancellationToken)
         {
             var result = await _table.GetEntityIfExistsAsync<PackageEntity>(
-                TableOperationBuilder.GetPartitionKey(id),
+                GetPartitionKey(id),
                 TableOperationBuilder.GetRowKey(version),
                 cancellationToken: cancellationToken);
 
@@ -195,7 +202,7 @@ namespace BaGetter.Azure
         public async Task<bool> HardDeletePackageAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
             var result = await _table.DeleteEntityAsync(
-                TableOperationBuilder.GetPartitionKey(id),
+                GetPartitionKey(id),
                 TableOperationBuilder.GetRowKey(version),
                 cancellationToken: cancellationToken);
             return !result.IsError;
@@ -204,7 +211,7 @@ namespace BaGetter.Azure
         public async Task<bool> RelistPackageAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
             var result = await _table.GetEntityIfExistsAsync<PackageListingEntity>(
-                TableOperationBuilder.GetPartitionKey(id),
+                GetPartitionKey(id),
                 TableOperationBuilder.GetRowKey(version),
                 cancellationToken: cancellationToken);
 
@@ -225,7 +232,7 @@ namespace BaGetter.Azure
         public async Task<bool> UnlistPackageAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
             var result = await _table.GetEntityIfExistsAsync<PackageListingEntity>(
-                TableOperationBuilder.GetPartitionKey(id),
+                GetPartitionKey(id),
                 TableOperationBuilder.GetRowKey(version),
                 cancellationToken: cancellationToken);
 
@@ -244,5 +251,24 @@ namespace BaGetter.Azure
         }
 
         private static List<string> MinimalColumnSet => ["PartitionKey"];
+
+        private string GetPartitionKey(string id)
+        {
+            var feed = _feed.Current;
+            var options = _root.Value;
+            if (feed == null || feed.IsLegacySingleFeed || string.IsNullOrWhiteSpace(feed.Name))
+            {
+                return TableOperationBuilder.GetPartitionKey(id);
+            }
+
+            var partitionPrefix = feed.Name;
+            if (FeedUtility.TryFindFeed(options, feed.Name, out var configuredFeed)
+                && !string.IsNullOrWhiteSpace(configuredFeed.Database?.PartitionPrefix))
+            {
+                partitionPrefix = configuredFeed.Database.PartitionPrefix;
+            }
+
+            return TableOperationBuilder.GetPartitionKey(partitionPrefix, id);
+        }
     }
 }

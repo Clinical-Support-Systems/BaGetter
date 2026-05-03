@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NuGet.Versioning;
 using Xunit;
@@ -331,7 +332,13 @@ public class PackageStorageServiceTests
         public FactsBase()
         {
             _storage = new Mock<IStorageService>();
-            _target = new PackageStorageService(_storage.Object, Mock.Of<ILogger<PackageStorageService>>());
+            var options = new Mock<IOptionsSnapshot<BaGetterOptions>>();
+            options.SetupGet(o => o.Value).Returns(new BaGetterOptions());
+            _target = new PackageStorageService(
+                _storage.Object,
+                new FeedContextAccessor { Current = new FeedContext { IsLegacySingleFeed = true } },
+                options.Object,
+                Mock.Of<ILogger<PackageStorageService>>());
 
             _puts = new Dictionary<string, (Stream Content, string ContentType)>();
         }

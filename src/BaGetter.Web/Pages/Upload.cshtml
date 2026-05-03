@@ -1,5 +1,6 @@
-﻿@page
+@page
 @inject IUrlGenerator _url
+@inject Microsoft.Extensions.Options.IOptionsSnapshot<BaGetterOptions> _options
 
 @{
     ViewData["Title"] = "Upload package";
@@ -7,6 +8,12 @@
     var baseUrl = Url.PageLink("/Index");
     var publishUrl = _url.GetPackagePublishResourceUrl();
     var serviceIndexUrl = _url.GetServiceIndexUrl();
+    var routeFeed = ViewContext.HttpContext.Request.RouteValues["feed"]?.ToString();
+    var canonicalFeed = string.IsNullOrWhiteSpace(routeFeed) ? "internal" : routeFeed;
+    var canonicalFeedIndex = $"{ViewContext.HttpContext.Request.Scheme}://{ViewContext.HttpContext.Request.Host}/{canonicalFeed}/v3/index.json";
+    var isFeedReadOnly = FeedUtility.IsMultiFeedConfigured(_options.Value)
+        && FeedUtility.TryFindFeed(_options.Value, canonicalFeed, out var configuredFeed)
+        && configuredFeed.IsReadOnly;
 }
 
 <div class="col-sm-12">
@@ -14,6 +21,17 @@
     <hr class="breadcrumb-divider" />
 
     <div>You can push packages using the service index <code>@serviceIndexUrl</code>.</div>
+    @if (string.IsNullOrWhiteSpace(routeFeed))
+    {
+        <div>Canonical source for new clients: <code>@canonicalFeedIndex</code> (root source remains an alias).</div>
+    }
+
+    @if (isFeedReadOnly)
+    {
+        <div class="alert alert-warning">
+            This feed is configured as read-only. Package upload is disabled.
+        </div>
+    }
 
     <div class="tabbed-info" x-data="{ tabs: tabs, active: tabs[0] }">
         <ul class="nav">
